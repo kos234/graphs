@@ -10,7 +10,8 @@ export interface ThemeInputProps extends ThemeTextProps {
     typeInput?: InputModeOptions | undefined
     value: string,
     onInput: Function,
-    notDeleteFirstZero?: boolean
+    notDeleteFirstZero?: boolean,
+    allowMinus?: boolean
 }
 
 export default function ThemeInput({
@@ -21,7 +22,8 @@ export default function ThemeInput({
                                        value,
                                        onInput,
                                        fontSizeType,
-                                       notDeleteFirstZero
+                                       notDeleteFirstZero,
+                                       allowMinus
                                    }: ThemeInputProps) {
     const [selection, setSelection] = useState(undefined);
     const {colorScheme, defaultStyle} = useContext(AppContext);
@@ -31,7 +33,8 @@ export default function ThemeInput({
         let newText = text;
         switch (typeInput) {
             case "numeric":
-                newText = text.replaceAll(/[^0-9]/g, "");
+                // newText = text.replaceAll(/[^0-9]/g, "");
+                newText = text.replaceAll(new RegExp("[^0-9"+ (allowMinus ? "\-" : "") +"]", "g"), "");
                 if (!notDeleteFirstZero && newText !== "0")
                     newText = newText.replace(/^0+/, "");
 

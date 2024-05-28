@@ -13,7 +13,8 @@ interface GraphCanvasProps extends DefaultProps {
     getIsEulersAfterRender?: (isEulers: boolean) =>void,
     runAnimation?: boolean,
     animationPath?: FSPath[],
-    onStopAnimation?:()=>void
+    onStopAnimation?:()=>void,
+    colorGraphs?:number[]
 }
 const delay = 10;
 
@@ -39,7 +40,7 @@ const colors = [
     "#87CEEB",
     "#E6E6FA",
 ]
-export default function GraphCanvas({onStopAnimation, matrix, vertices, iHateReact, getIsEulersAfterRender, runAnimation, animationPath}: GraphCanvasProps) {
+export default function GraphCanvas({colorGraphs, onStopAnimation, matrix, vertices, iHateReact, getIsEulersAfterRender, runAnimation, animationPath}: GraphCanvasProps) {
     const {height, width} = useWindowDimensions();
     const refCanvas = useRef();
     const refAnimation = useRef();
@@ -176,7 +177,7 @@ export default function GraphCanvas({onStopAnimation, matrix, vertices, iHateRea
                     if (i === j)
                         continue;
 
-                    pows[i] += Math.max(matrix.current[i][j], matrix.current[j][i]);
+                    pows[i] += Math.max(+(matrix.current[i][j] > 0),+(matrix.current[j][i] > 0));
                     const isLine = matrix.current[i][j] === matrix.current[j][i];
                     if (matrix.current[i][j] === 0)
                         continue;
@@ -196,11 +197,28 @@ export default function GraphCanvas({onStopAnimation, matrix, vertices, iHateRea
                     } else {
                         drawArrow(ctx, pointX, pointY, otherPointX, otherPointY);
                     }
+
+                    if(matrix.current[j][i] != 1) {
+                        const nameVertices = matrix.current[j][i] + "";
+                        const sizeVertices = ctx.measureText(nameVertices);
+                        const fontHeight = sizeVertices.fontBoundingBoxAscent + sizeVertices.fontBoundingBoxDescent;
+                        ctx.fillStyle = colorScheme.textColor;
+                        let deltaX = 0;
+                        let deltaY = 0;
+                        if(Math.abs(pointX - otherPointX) > Math.abs(pointY - otherPointY)){
+                            deltaY += 20;
+                        }else{
+                            deltaX += 20;
+                        }
+                        ctx.fillText(nameVertices, (pointX + otherPointX + deltaX) / 2 - sizeVertices.width / 2, (pointY + otherPointY + deltaY) / 2 + fontHeight / 4)
+
+                    }
                 }
 
                 isEulers &&= pows[i] % 2 == 0
             }
 
+            const isColored = colorGraphs != null || colorGraphs != undefined;
             for (let i = 0; i < vertices; i++) {
                 const angle = degreesToRadians(-90 + 360 / vertices * i);
                 const pointX = centerX + offsetAtCenter * Math.cos(angle);
@@ -208,10 +226,11 @@ export default function GraphCanvas({onStopAnimation, matrix, vertices, iHateRea
                 const nameVertices = String.fromCharCode(aCharCode + i);
                 const sizeVertices = ctx.measureText(nameVertices);
                 const fontHeight = sizeVertices.fontBoundingBoxAscent + sizeVertices.fontBoundingBoxDescent;
-                drawCircle(ctx, pointX, pointY, circleRadius, "white", colorScheme.textColor, 2);
+                drawCircle(ctx, pointX, pointY, circleRadius, colorScheme.backgroundColor, isColored ? colors[colorGraphs[i]] : colorScheme.textColor, 2);
                 // console.log("i", i, pointX, pointY)
-                ctx.fillStyle = colorScheme.textColor;
+                ctx.fillStyle = isColored ? colors[colorGraphs[i]] : colorScheme.textColor;
                 ctx.fillText(nameVertices, pointX - sizeVertices.width / 2, pointY + fontHeight / 4)
+                ctx.fillStyle = colorScheme.textColor;
 
                 let sum = 0;
                 for (let j = 0; j < vertices; j++) {
@@ -222,7 +241,6 @@ export default function GraphCanvas({onStopAnimation, matrix, vertices, iHateRea
 
                 const powSizeVertices = ctx.measureText("" + pows[i]);
                 const powActualHeight = powSizeVertices.actualBoundingBoxAscent + powSizeVertices.actualBoundingBoxDescent;
-                const powFontHeight = powSizeVertices.fontBoundingBoxAscent + powSizeVertices.fontBoundingBoxDescent;
 
                 let powPointX = centerX + (offsetAtCenter + circleRadius + 6) * Math.cos(angle);
                 let powPointY = centerY + (offsetAtCenter + circleRadius + 6) * Math.sin(angle);

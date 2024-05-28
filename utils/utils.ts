@@ -16,7 +16,7 @@ export function binSearch<T>(findValue:T, array:T[], comparator: (a:T, b:T)=>num
             end = mid - 1;
 
     }
-    return undefined;
+    return start;
 }
 
 
