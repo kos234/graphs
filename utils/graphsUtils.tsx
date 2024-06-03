@@ -115,13 +115,10 @@ export class BFS extends FirstSearch {
         queue.push(vertex);
         while (queue.length > 0) {
             const node = queue.shift();
-            console.log("for", node);
-            console.log("visited", Array.from(this.visited.keys()).join(", "));
             const accessVertex = new Set<number>();
             const visitedVertex = new Set<number>();
             for (let i = 0; i < this.matrix.length; i++) {
                 if (this.matrix[node][i] != 0 && !this.visited.has(i)) {
-                    console.log("access", i);
                     accessVertex.add(i);
                     let isCheck = false;
                     if (this.checkBypass != null) {
@@ -140,12 +137,12 @@ export class BFS extends FirstSearch {
                     queue.push(i);
                     this.visited.add(i);
                     visitedVertex.add(i);
-                    if (this.checkBypass != null && isCheck)
-                        i = 0;
+                    if (this.checkBypass != null && isCheck) {
+                        i = -1;
+                    }
                 }
             }
 
-            console.log()
             if (this.checkBypass && !equalSet(visitedVertex, accessVertex.keys())) {
                 this.resOfBypass = "Неверный обход! Вы пошли ни во все дочерние вершины " + String.fromCharCode(node + aCharCode);
             }
